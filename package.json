@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "splitargs": "^0.0.7",
+    "ssh2": "^0.8.2",
+    "terminal-kit": "^1.27.3"
+  },
+  "stale": "cache"
+}
