@@ -1,12 +1,9 @@
 const fs = require('fs')
-const crypto = require('crypto')
 const termkit = require('terminal-kit')
 
 const ssh2 = require('ssh2')
 const commands = require('./commands')
 const splitArgs = require('splitargs')
- 
-const allowedUser = Buffer.from('root')
 
 function loop(t, stream) {
   t.bold.green('root@kognise-box').styleReset(':').bold.blue('~').styleReset('# ')
@@ -74,18 +71,12 @@ const server = new ssh2.Server({
   console.log('* Connected')
   client._sshstream._authFailure = client._sshstream.authFailure;
   client._sshstream.authFailure = () => {
-    client._sshstream._authFailure([ 'password', 'publickey' ]);
+    client._sshstream._authFailure([ 'password', 'privatekey' ]);
   }
  
   client.on('authentication', (ctx) => {
-    if (ctx.method === 'password') console.log(`* Login attempt: ${ctx.username}:${ctx.password}`)
-    const user = Buffer.from(ctx.username)
-    if (user.length !== allowedUser.length
-        || !crypto.timingSafeEqual(user, allowedUser)) {
-      return ctx.reject()
-    }
- 
     if (ctx.method === 'password') {
+      console.log(`* Login attempt: ${ctx.username}:${ctx.password}`)
       ctx.accept()
     } else {
       ctx.reject()
@@ -93,7 +84,7 @@ const server = new ssh2.Server({
   }).on('ready', () => {
     console.log('* Logged in')
  
-    client.on('session', (accept, reject) => {
+    client.on('session', (accept) => {
       const session = accept()
       
       let rows = 24
